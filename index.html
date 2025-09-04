@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>알베르 카뮈의 이방인: 대화형 탐구</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Sahara Sands -->
+    <!-- Application Structure Plan: A single-page, thematic scrolling application with a sticky navigation bar. The structure follows a logical progression from introduction to plot, key concepts, a new interactive character map, and finally, impact. This non-linear but guided structure allows users to either follow the narrative flow or jump directly to topics of interest, which is more effective for exploring a literary analysis than a rigid, linear report format. -->
+    <!-- Visualization & Content Choices: Report Info: Plot Summary -> Goal: Organize/Inform -> Viz: Interactive Timeline/Toggle -> Interaction: Click to switch between Part 1 & 2 -> Justification: Breaks down the dense plot into manageable, user-controlled sections. Report Info: Philosophical Themes -> Goal: Organize/Inform -> Viz: Tabbed Interface -> Interaction: Click to reveal concept details -> Justification: Allows focused exploration of complex ideas without overwhelming the user. Report Info: Characters -> Goal: Organize/Relationships -> Viz: HTML/CSS Character Map -> Interaction: Click for details -> Justification: Visually synthesizes character connections, providing a quick, high-level understanding that text alone cannot. Gemini API for LLM -> Goal: Enhance Interaction & Insight -> Viz: Text output in a dedicated content block -> Interaction: Button click to generate text output based on user context (Mersault's emotions) or user input (generating a philosophical question) -> Justification: Adds a dynamic, creative layer of analysis and engagement not possible with static content, deepening the user's understanding of the source material's themes. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #FDFCFB;
+            color: #4F4A45;
+        }
+        .nav-link.active {
+            color: #C5A880;
+            font-weight: 700;
+        }
+        .tab-btn.active {
+            background-color: #C5A880;
+            color: #FDFCFB;
+        }
+        .plot-btn.active {
+            background-color: #6C5F5B;
+            color: #FDFCFB;
+        }
+        .character-node {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .character-node:hover, .character-node.active {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(197, 168, 128, 0.7);
+        }
+        .line {
+            position: absolute;
+            background-color: #C5A880;
+            z-index: -1;
+        }
+        @keyframes fade-in {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .animate-fade-in {
+            animation: fade-in 0.5s ease-out;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="sticky top-0 bg-white/80 backdrop-blur-md z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-3">
+            <div class="flex justify-between items-center">
+                <h1 class="text-xl font-bold text-[#6C5F5B]">이방인 탐구</h1>
+                <div class="hidden md:flex space-x-8">
+                    <a href="#intro" class="nav-link text-gray-600 hover:text-[#C5A880] transition">작품 소개</a>
+                    <a href="#plot" class="nav-link text-gray-600 hover:text-[#C5A880] transition">줄거리</a>
+                    <a href="#concepts" class="nav-link text-gray-600 hover:text-[#C5A880] transition">핵심 개념</a>
+                    <a href="#characters" class="nav-link text-gray-600 hover:text-[#C5A880] transition">인물 관계</a>
+                    <a href="#impact" class="nav-link text-gray-600 hover:text-[#C5A880] transition">비평과 영향</a>
+                    <a href="#gemini-llm-section" class="nav-link text-gray-600 hover:text-[#C5A880] transition">✨ LLM 기능</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+
+        <section id="hero" class="text-center py-20">
+            <h2 class="text-5xl md:text-6xl font-extrabold text-[#4F4A45]">알베르 카뮈, 이방인</h2>
+            <p class="mt-6 text-lg md:text-xl text-gray-500 max-w-2xl mx-auto">"오늘 엄마가 죽었다. 아니, 어쩌면 어제."</p>
+            <p class="mt-4 text-gray-500 max-w-2xl mx-auto">부조리한 세상 속 한 남자의 시선을 통해 인간 존재의 근본을 탐구합니다.</p>
+        </section>
+
+        <section id="intro" class="py-16 scroll-mt-20">
+            <h3 class="text-3xl font-bold text-center mb-12">작품 개요 및 배경</h3>
+            <div class="grid md:grid-cols-2 gap-10 items-center">
+                <div class="bg-white p-8 rounded-lg shadow-md border border-gray-100">
+                    <h4 class="text-2xl font-bold mb-4 text-[#6C5F5B]">알베르 카뮈와 부조리 철학</h4>
+                    <p class="text-gray-600 leading-relaxed">알베르 카뮈(1913-1960)는 프랑스의 작가이자 철학자로, 1957년 노벨 문학상을 수상했습니다. 그는 인간이 의미를 찾으려는 열망과 무의미하고 비합리적인 세계 사이의 충돌, 즉 '부조리'를 핵심 사상으로 탐구했습니다. 《이방인》은 그의 부조리 3부작(소설 《이방인》, 희곡 《칼리굴라》, 철학 에세이 《시시포스의 신화》) 중 첫 번째 작품으로, 그의 사상을 가장 압축적으로 보여줍니다.</p>
+                </div>
+                <div class="bg-white p-8 rounded-lg shadow-md border border-gray-100">
+                    <h4 class="text-2xl font-bold mb-4 text-[#6C5F5B]">시대적 배경</h4>
+                    <p class="text-gray-600 leading-relaxed">소설의 배경은 1940년대 프랑스 식민지였던 알제리입니다. 제2차 세계대전의 혼란 속에서 실존주의 철학이 유럽 지성계를 휩쓸던 시기였습니다. 《이방인》은 이러한 시대적 분위기 속에서 개인의 실존, 사회와의 단절, 그리고 인간 존재의 조건을 날카롭게 포착하며, 출간과 동시에 큰 반향을 일으켰습니다.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="plot" class="py-16 scroll-mt-20">
+            <h3 class="text-3xl font-bold text-center mb-6">줄거리 탐구</h3>
+            <p class="text-center text-gray-500 mb-12">소설은 주인공 뫼르소의 삶이 살인 사건을 기점으로 나뉘는 1부와 2부로 구성됩니다. 아래 버튼을 눌러 각 부분의 주요 사건을 살펴보세요.</p>
+            <div class="flex justify-center space-x-4 mb-10">
+                <button id="plot-part1-btn" class="plot-btn active px-6 py-2 rounded-full font-semibold transition">제1부: 무감각한 삶</button>
+                <button id="plot-part2-btn" class="plot-btn px-6 py-2 rounded-full font-semibold transition">제2부: 부조리한 재판</button>
+            </div>
+            <div id="plot-content">
+                <!-- JS will populate this area -->
+            </div>
+        </section>
+
+        <section id="concepts" class="py-16 scroll-mt-20">
+            <h3 class="text-3xl font-bold text-center mb-6">핵심 개념 분석</h3>
+            <p class="text-center text-gray-500 mb-12">《이방인》은 여러 철학적 개념을 담고 있습니다. 각 개념을 클릭하여 자세한 설명을 확인하세요.</p>
+            <div class="flex flex-wrap justify-center gap-4 mb-10">
+                <button class="tab-btn active px-5 py-2 rounded-full font-semibold transition" data-target="concept-absurdity">부조리 (Absurdity)</button>
+                <button class="tab-btn px-5 py-2 rounded-full font-semibold transition" data-target="concept-stranger">이방인 (Stranger)</button>
+                <button class="tab-btn px-5 py-2 rounded-full font-semibold transition" data-target="concept-existentialism">실존주의 (Existentialism)</button>
+                <button class="tab-btn px-5 py-2 rounded-full font-semibold transition" data-target="concept-sun">태양의 상징</button>
+            </div>
+            <div id="concept-content" class="bg-white p-8 rounded-lg shadow-md border border-gray-100 min-h-[200px]">
+                <!-- JS will populate this area -->
+            </div>
+        </section>
+
+        <section id="characters" class="py-16 scroll-mt-20">
+            <h3 class="text-3xl font-bold text-center mb-6">인물 관계 탐구</h3>
+            <p class="text-center text-gray-500 mb-12">뫼르소를 중심으로 얽힌 인물들의 관계를 시각적으로 탐색해 보세요. 각 인물을 클릭하면 설명을 볼 수 있습니다.</p>
+            <div class="flex flex-col md:flex-row gap-8">
+                <div class="w-full md:w-2/3 relative h-[500px] bg-white rounded-lg shadow-md border border-gray-100 p-4" id="character-map-container">
+                    <!-- JS will generate character map -->
+                </div>
+                <div class="w-full md:w-1/3 flex flex-col gap-4">
+                    <div id="character-info" class="bg-white p-6 rounded-lg shadow-md border border-gray-100">
+                        <h4 id="char-info-name" class="text-2xl font-bold text-[#6C5F5B] mb-4">인물을 선택하세요</h4>
+                        <p id="char-info-desc" class="text-gray-600 leading-relaxed">인물 관계도에서 원을 클릭하면 해당 인물에 대한 설명이 여기에 표시됩니다.</p>
+                    </div>
+                    <div class="flex flex-col items-center bg-white p-6 rounded-lg shadow-md border border-gray-100">
+                        <h5 class="text-lg font-bold mb-2 text-[#6C5F5B] text-center">뫼르소의 감정 분석 ✨</h5>
+                        <p class="text-sm text-gray-500 text-center mb-4">아래 버튼을 클릭하여 소설 속 뫼르소의 감정을 Gemini가 분석해 줍니다.</p>
+                        <button id="analyze-meursault-emotion" class="bg-[#C5A880] text-white px-4 py-2 rounded-full hover:bg-[#a88f6c] transition-colors duration-300 text-sm">
+                            분석 시작
+                        </button>
+                        <div id="meursault-emotion-result" class="mt-4 text-center text-gray-600 text-sm"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="impact" class="py-16 scroll-mt-20">
+            <h3 class="text-3xl font-bold text-center mb-12">비평과 영향</h3>
+            <div class="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-md border border-gray-100">
+                <h4 class="text-2xl font-bold mb-4 text-[#6C5F5B]">간결한 문체와 사회적 위선 비판</h4>
+                <p class="text-gray-600 leading-relaxed mb-4">《이방인》은 감정을 배제한 간결하고 건조한 문체로 유명합니다. 이러한 '0도의 글쓰기'는 주인공 뫼르소의 무심한 내면과 세상을 바라보는 소외된 시선을 효과적으로 전달합니다. 독자는 뫼르소의 시선을 통해 감정 표현을 강요하고, 정해진 규범에서 벗어난 개인을 단죄하는 사회의 위선과 부조리를 목격하게 됩니다.</p>
+                <p class="text-gray-600 leading-relaxed">이 소설은 출간된 지 수십 년이 지난 오늘날까지도 현대인의 고독, 소외, 그리고 진실의 문제를 다루며 전 세계 독자들에게 깊은 울림을 주고 있습니다. 사회 속에서 '이방인'으로 살아가는 우리 자신을 돌아보게 하는 강력한 힘을 지닌 작품입니다.</p>
+            </div>
+        </section>
+
+        <section id="gemini-llm-section" class="py-16 scroll-mt-20">
+            <h3 class="text-3xl font-bold text-center mb-6">부조리한 질문 만들기 ✨</h3>
+            <p class="text-center text-gray-500 mb-12 max-w-2xl mx-auto">일상의 한 구절을 입력하면, Gemini가 뫼르소의 시선으로 부조리한 질문을 만들어 드립니다. 자신의 삶을 카뮈의 관점으로 바라보는 경험을 해보세요.</p>
+            <div class="max-w-3xl mx-auto bg-white p-8 rounded-lg shadow-md border border-gray-100">
+                <h4 class="text-2xl font-bold mb-4 text-[#6C5F5B]">당신의 문장을 입력하세요</h4>
+                <div class="flex flex-col md:flex-row gap-4">
+                    <input id="absurd-input" type="text" placeholder="예: 나는 매일 아침 지하철을 탄다." class="flex-1 p-3 rounded-lg border border-gray-300 focus:outline-none focus:border-[#C5A880]">
+                    <button id="generate-absurd-question" class="bg-[#6C5F5B] text-white px-6 py-3 rounded-lg hover:bg-[#4F4A45] transition-colors duration-300 font-semibold flex-shrink-0">질문 생성</button>
+                </div>
+                <div id="absurd-result" class="mt-6 text-gray-700 leading-relaxed min-h-[50px]"></div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-[#4F4A45] text-white py-6">
+        <div class="container mx-auto text-center">
+            <p>&copy; 2024. Interactive Literary Analysis of Albert Camus' The Stranger.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const plotData = {
+                part1: `
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
+                        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                            <h4 class="font-bold text-lg mb-2">어머니의 죽음</h4>
+                            <p class="text-sm text-gray-600">소설은 "오늘 엄마가 죽었다"는 문장으로 시작된다. 뫼르소는 어머니의 장례식에서 슬퍼하지 않고, 커피를 마시고 담배를 피우는 등 사회적 통념에 어긋나는 행동을 한다.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                            <h4 class="font-bold text-lg mb-2">마리와의 만남</h4>
+                            <p class="text-sm text-gray-600">장례식 다음 날, 뫼르소는 옛 직장 동료 마리를 만나 해수욕을 즐기고 희극 영화를 본다. 그는 마리의 사랑 고백에도 무심하게 반응한다.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                            <h4 class="font-bold text-lg mb-2">레이몽과의 관계</h4>
+                            <p class="text-sm text-gray-600">이웃 레이몽의 부탁으로 그의 옛 애인을 유인하는 편지를 대신 써주며 사건에 얽히기 시작한다. 이는 이후의 비극과 직접적으로 연결된다.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 lg:col-span-3">
+                            <h4 class="font-bold text-lg mb-2">해변의 살인</h4>
+                            <p class="text-sm text-gray-600">레이몽과 함께 간 해변에서 그의 옛 애인의 오빠인 아랍인 무리와 마주친다. 이후 혼자 해변으로 돌아간 뫼르소는 작열하는 태양 아래서 아랍인에게 권총을 발사하여 살해한다.</p>
+                        </div>
+                    </div>
+                `,
+                part2: `
+                    <div class="grid md:grid-cols-2 gap-6 animate-fade-in">
+                        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                            <h4 class="font-bold text-lg mb-2">체포와 심문</h4>
+                            <p class="text-sm text-gray-600">살인죄로 체포된 뫼르소는 예심 판사에게 자신의 행동을 논리적으로 설명하지 못한다. 그는 자신의 감정에 솔직할 뿐, 후회나 변명을 하지 않는다.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                            <h4 class="font-bold text-lg mb-2">부조리한 재판</h4>
+                            <p class="text-sm text-gray-600">재판의 핵심은 살인 동기가 아닌, '어머니의 장례식에서 울지 않은' 그의 태도에 맞춰진다. 검사는 그를 감정이 없는 괴물로 몰아가고, 사회는 그를 단죄한다.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                            <h4 class="font-bold text-lg mb-2">사형 선고</h4>
+                            <p class="text-sm text-gray-600">결국 뫼르소는 계획적인 살인범으로 규정되어 사형을 선고받는다. 그는 사회의 논리와 위선 속에서 철저한 이방인이 된다.</p>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                            <h4 class="font-bold text-lg mb-2">마지막 깨달음</h4>
+                            <p class="text-sm text-gray-600">죽음을 앞두고 찾아온 사제에게 분노를 터뜨리며, 그는 처음으로 세계의 다정한 무관심에 마음을 연다. 삶의 부조리를 온전히 받아들이며 해방감을 느낀다.</p>
+                        </div>
+                    </div>
+                `
+            };
+
+            const conceptData = {
+                'concept-absurdity': {
+                    title: '부조리 (Absurdity)',
+                    content: '뫼르소는 논리나 감정보다 순수한 감각에 따라 행동합니다. 어머니의 죽음에 슬퍼하지 않는 것, 아랍인을 살해한 것 모두 사회가 기대하는 논리를 벗어난 부조리한 행동입니다. 카뮈는 이를 통해 인간의 이성적 욕구와 무의미한 세계의 충돌, 즉 부조리를 표현합니다.'
+                },
+                'concept-stranger': {
+                    title: '이방인 (Stranger)',
+                    content: '뫼르소는 사회적 관습과 감정 표현의 틀에 갇히지 않는 ‘이방인’입니다. 그는 사회로부터 소외될 뿐만 아니라, 자신의 감정과도 분리된 이방인적인 존재로 묘사됩니다. 그는 세상의 규칙을 이해하지도, 따르려 하지도 않습니다.'
+                },
+                'concept-existentialism': {
+                    title: '실존주의 (Existentialism)',
+                    content: '뫼르소는 재판과 죽음을 통해 삶의 무의미함을 받아들이고, 자신의 운명을 스스로 긍정하며 자유를 찾습니다. 이는 정해진 본질 없이 세상에 던져진 존재가 스스로의 선택을 통해 삶을 만들어간다는 실존주의의 핵심 사상을 반영합니다.'
+                },
+                'concept-sun': {
+                    title: '태양의 상징',
+                    content: '소설에서 반복적으로 등장하는 ‘태양’은 단순한 자연 현상을 넘어, 뫼르소를 무감각하게 만들고 이성을 마비시켜 살인을 유발하는, 거부할 수 없는 부조리한 세계 그 자체를 상징합니다. 뫼르소에게 태양은 억압적이고 폭력적인 힘입니다.'
+                }
+            };
+
+            const characterData = {
+                meursault: { name: '뫼르소', desc: '소설의 주인공. 사회적 규범과 감정 표현에 무관심하며, 자신의 감각과 본능에 충실한 인물. 살인 사건을 통해 사회와 충돌하며 자신의 실존을 마주한다.' },
+                marie: { name: '마리', desc: '뫼르소의 옛 직장 동료이자 연인. 뫼르소의 무심한 태도에도 불구하고 그를 사랑하며, 재판에서 그에게 유리한 증언을 하려 노력한다.' },
+                raymond: { name: '레이몽', desc: '뫼르소의 이웃. 포주로 의심되는 인물로, 자신의 명예 문제에 뫼르소를 끌어들이며 살인 사건의 직접적인 계기를 제공한다.' },
+                salamano: { name: '살라마노', desc: '뫼르소의 이웃 노인. 늘 학대하면서도 잃어버린 개를 그리워하는 모순적인 모습을 통해 인간관계의 복잡성을 보여준다.' },
+                arab: { name: '아랍인', desc: '레이몽의 옛 애인의 오빠. 뫼르소에게 살해당하는 인물로, 이름조차 없이 등장하며 당시 식민지 사회의 비인간성과 부조리를 상징한다.' },
+            };
+
+            const meursaultEmotionData = {
+                part1: "소설 1부에서 뫼르소는 어머니의 장례식, 마리와의 만남, 살인 사건 등 모든 상황에 대해 무감각하고 무심한 태도를 보입니다. 그의 감정은 주로 육체적인 감각(햇빛, 더위, 피로)에 국한되며, 사회적 감정을 거의 느끼지 않는 것처럼 보입니다.",
+                part2: "소설 2부에서 뫼르소는 재판 과정과 감옥 생활을 겪으며 분노와 좌절, 그리고 마지막에는 해방감을 느낍니다. 특히 사제에게 분노를 표출하는 장면에서, 그는 처음으로 강렬한 감정을 드러내며 부조리한 세계에 대한 깨달음을 얻게 됩니다."
+            };
+
+            const plotContent = document.getElementById('plot-content');
+            const plotPart1Btn = document.getElementById('plot-part1-btn');
+            const plotPart2Btn = document.getElementById('plot-part2-btn');
+
+            function updatePlotContent(part) {
+                plotContent.innerHTML = plotData[part];
+                plotPart1Btn.classList.toggle('active', part === 'part1');
+                plotPart2Btn.classList.toggle('active', part === 'part2');
+            }
+
+            plotPart1Btn.addEventListener('click', () => updatePlotContent('part1'));
+            plotPart2Btn.addEventListener('click', () => updatePlotContent('part2'));
+            updatePlotContent('part1');
+
+            const conceptContent = document.getElementById('concept-content');
+            const tabBtns = document.querySelectorAll('.tab-btn');
+
+            function updateConceptContent(targetId) {
+                const data = conceptData[targetId];
+                conceptContent.innerHTML = `
+                    <h4 class="text-2xl font-bold text-[#6C5F5B] mb-4">${data.title}</h4>
+                    <p class="text-gray-600 leading-relaxed">${data.content}</p>
+                `;
+                tabBtns.forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.target === targetId);
+                });
+            }
+
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => updateConceptContent(btn.dataset.target));
+            });
+            updateConceptContent('concept-absurdity');
+
+            const charInfoName = document.getElementById('char-info-name');
+            const charInfoDesc = document.getElementById('char-info-desc');
+            const characterMapContainer = document.getElementById('character-map-container');
+            const analyzeButton = document.getElementById('analyze-meursault-emotion');
+            const resultDiv = document.getElementById('meursault-emotion-result');
+            let activeNode = null;
+
+            function updateCharacterInfo(charId) {
+                const data = characterData[charId];
+                charInfoName.textContent = data.name;
+                charInfoDesc.textContent = data.desc;
+                
+                const currentNode = document.getElementById(`char-${charId}`);
+                if (activeNode) {
+                    activeNode.classList.remove('active');
+                }
+                if (currentNode) {
+                    currentNode.classList.add('active');
+                    activeNode = currentNode;
+                }
+            }
+            
+            function createCharacterMap() {
+                const positions = {
+                    meursault: { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' },
+                    marie: { top: '20%', left: '50%', transform: 'translate(-50%, -50%)' },
+                    raymond: { top: '50%', left: '15%', transform: 'translate(-50%, -50%)' },
+                    salamano: { top: '80%', left: '25%', transform: 'translate(-50%, -50%)' },
+                    arab: { top: '50%', left: '85%', transform: 'translate(-50%, -50%)' },
+                };
+
+                Object.keys(characterData).forEach(id => {
+                    const char = characterData[id];
+                    const pos = positions[id];
+                    const node = document.createElement('div');
+                    node.id = `char-${id}`;
+                    node.className = 'character-node absolute bg-[#C5A880] text-white w-24 h-24 rounded-full flex items-center justify-center text-center p-2 font-bold shadow-lg border-4 border-white';
+                    node.style.top = pos.top;
+                    node.style.left = pos.left;
+                    node.style.transform = pos.transform;
+                    node.textContent = char.name;
+                    node.addEventListener('click', () => updateCharacterInfo(id));
+                    characterMapContainer.appendChild(node);
+                });
+            }
+
+            createCharacterMap();
+            updateCharacterInfo('meursault');
+
+            analyzeButton.addEventListener('click', async () => {
+                resultDiv.textContent = '분석 중...';
+                const prompt = `알베르 카뮈의 소설 '이방인'에서 주인공 뫼르소의 감정 변화를 1부와 2부로 나누어 간결하게 분석해줘.`;
+                const payload = { contents: [{ parts: [{ text: prompt }] }] };
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!response.ok) {
+                        throw new Error('API request failed');
+                    }
+                    const result = await response.json();
+                    const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                    resultDiv.textContent = text || '분석 결과가 없습니다.';
+                } catch (error) {
+                    resultDiv.textContent = '분석에 실패했습니다. 다시 시도해주세요.';
+                    console.error('API Error:', error);
+                }
+            });
+
+            const absurdInput = document.getElementById('absurd-input');
+            const generateButton = document.getElementById('generate-absurd-question');
+            const absurdResult = document.getElementById('absurd-result');
+
+            generateButton.addEventListener('click', async () => {
+                const input = absurdInput.value;
+                if (!input) {
+                    absurdResult.textContent = '문장을 입력해 주세요.';
+                    return;
+                }
+
+                absurdResult.textContent = '질문 생성 중...';
+                const prompt = `알베르 카뮈의 소설 '이방인'의 부조리 철학 관점에서 다음 문장에 대해 질문을 만들어줘. 질문은 간결하고 존재론적이어야 해. 문장: "${input}"`;
+                const payload = { contents: [{ parts: [{ text: prompt }] }] };
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!response.ok) {
+                        throw new Error('API request failed');
+                    }
+                    const result = await response.json();
+                    const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                    absurdResult.textContent = text || '질문 생성에 실패했습니다.';
+                } catch (error) {
+                    absurdResult.textContent = '질문 생성에 실패했습니다. 다시 시도해주세요.';
+                    console.error('API Error:', error);
+                }
+            });
+
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('section');
+
+            window.addEventListener('scroll', () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 100) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').substring(1) === current) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
